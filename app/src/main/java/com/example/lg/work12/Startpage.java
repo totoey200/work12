@@ -13,12 +13,12 @@ public class Startpage extends AppCompatActivity {
         setContentView(R.layout.activity_startpage);
 
         Handler h = new Handler();
-        h.postDelayed(new Runnable() {
+        h.postDelayed(new Runnable() { // 3초뒤에 MainActivity를 시작함
             @Override
             public void run() {
                 Intent intent = new Intent(Startpage.this,MainActivity.class);
-                startActivity(intent);
-                finish();
+                startActivity(intent); // MainActivity시작
+                finish(); // 현재 Activity종료
             }
         },3000);
     }

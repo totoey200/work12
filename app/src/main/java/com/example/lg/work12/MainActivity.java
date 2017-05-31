@@ -16,16 +16,16 @@ public class MainActivity extends AppCompatActivity {
     TextView timer;
     mTask task1;
     int count = 0;
-    boolean go = false;
+    boolean go = false; // 실행중인지 확인
     int images[] = {R.drawable.canada,R.drawable.china,R.drawable.france,
             R.drawable.germany,R.drawable.india,R.drawable.indonesia,R.drawable.italy,
-            R.drawable.japan,R.drawable.korea,R.drawable.russia};
+            R.drawable.japan,R.drawable.korea,R.drawable.russia};//사진의 아이디를 저장하는 배열
     String imgnames[] = {"캐나다","중국","프랑스","독일","인도","인도네시아",
-            "이탈리아","일본","한국","러시아"};
+            "이탈리아","일본","한국","러시아"};// 사진의 이름을 저장하는 배열
 
     @Override
-    protected void onDestroy() {
-        task1.cancel(true);
+    protected void onDestroy() { //앱이 종료되면
+        task1.cancel(true);//task1도 종료해준다.
         super.onDestroy();
     }
 
@@ -45,13 +45,16 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 Log.d("onClick","Clicked");
                 task1 = new mTask();
-                if(!go){
+                if(!go){ // 실행중이 아니면 실행시작
+                    if(count>9){
+                        count = 0;
+                    }
                     go = true;
-                    image.setImageResource(images[count]);
+                    image.setImageResource(images[count]);//사진을 바꿔줌
                     count++;
                     timer.setText("시작부터 0초");
                     timer.setVisibility(View.VISIBLE);
-                    task1.execute(getInterval(interval));
+                    task1.execute(getInterval(interval));//task1을 돌리기 시작
                 }
                 else{
                     go = false;
@@ -59,18 +62,22 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    class mTask extends AsyncTask<Integer,Integer,Integer>{
+    class mTask extends AsyncTask<Integer,Integer,Integer>{ //AsyncTask를 만들어줌
         @Override
-        protected Integer doInBackground(Integer... params) {
+        protected Integer doInBackground(Integer... params) {//background에서 동작할 내용들
             int result = 0;
             for(int i=1;;i++){
                 try {
-                    Thread.sleep(1000);
+                    if(!go){//중간에 실행이 취소되면 반복문 탈출
+                        result = i;
+                        break;
+                    }
+                    Thread.sleep(1000);//1초동안 일시정지
                     if(!go){
                         result = i;
                         break;
                     }
-                    publishProgress(i,params[0]);
+                    publishProgress(i,params[0]); //onProgressUpdate()로 넘어감
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -79,33 +86,33 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onProgressUpdate(Integer... values) {
+        protected void onProgressUpdate(Integer... values) {//publishProgress()가 호출되면 동작
             super.onProgressUpdate(values);
-            timer.setText("시작부터 "+values[0]+"초");
-            if(values[0]%(values[1]/1000)==0){
+            timer.setText("시작부터 "+values[0]+"초");//Thread.sleep으로 1초동안 일시정지하므로 1초씩 증가해주는게 가능하다
+            if(values[0]%(values[1]/1000)==0){//이미지 변경시간과 같으면
                 if(count>9){
                     count = 0;
                 }
-                image.setImageResource(images[count]);
+                image.setImageResource(images[count]);//사진을 바꿔줌
                 count++;
             }
         }
 
         @Override
-        protected void onPostExecute(Integer integer) {
+        protected void onPostExecute(Integer integer) {//doInBackground가 종료되면 동작
             super.onPostExecute(integer);
-            timer.setText(imgnames[count-1]+"선택("+(integer-1)+"초)");
+            timer.setText(imgnames[count-1]+"선택("+(integer-1)+"초)");//이 사진이 선택되었다고 출력
         }
 
         @Override
-        protected void onCancelled() {
+        protected void onCancelled() {//mTask가 cancel되면 동작
             super.onCancelled();
             if(isCancelled()){
 
             }
         }
     }
-    int getInterval(EditText et){
+    int getInterval(EditText et){//초를 받아오는 메소드
         String num = et.getText().toString();
         if(num.equals("")){
             return 1000;
@@ -115,7 +122,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public void onMyClick(View v){
+    public void onMyClick(View v){//처음으로가 눌리면 실행
         task1.cancel(true);
         task1 = null;
         interval.setText("");
